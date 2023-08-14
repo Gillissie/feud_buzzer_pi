@@ -1,0 +1,4 @@
+[Desktop Entry]
+# Using the lxterminal version will create a visible terminal window before the app launches, allowing output to be seen. Better for testing.
+#Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop/DB-5-Pi; python3 DB5.py; /bin/bash'"
+Exec=/bin/bash -c 'cd /home/pi/Desktop/buzzer; bash autostart.sh'
