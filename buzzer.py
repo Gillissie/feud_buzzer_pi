@@ -50,10 +50,30 @@ def videoExited(player, event):
     global currentVideoPlayer
     
     # Turn the LED's back on when ready to press again.
-    GPIO.output(17, 1)
+    GPIO.output(LEFT_LED, 1)
+    GPIO.output(RIGHT_LED, 1)
         
     currentVideoPlayer = None
     
+################################################################################################
+
+# When a buzzer video is playing, flash the LED of the side that matches.
+def flashLED():
+    global leftPlayer
+    global rightPlayer
+    global isFlashOn
+    
+    if (not flashingLedTimer.isExpired()):
+        return
+    
+    if (currentVideoPlayer == leftPlayer):
+        GPIO.output(LEFT_LED, isFlashOn)
+    else:
+        GPIO.output(RIGHT_LED, isFlashOn)
+        
+    isFlashOn = not isFlashOn
+    flashingLedTimer.reset()
+        
 ################################################################################################
 
 def checkForInput():
@@ -62,6 +82,7 @@ def checkForInput():
     global doPlayLeftVideo
     global doPlayRightVideo
     global videoTimer
+    global isFlashOn
     
     if (doPlayLeftVideo):
         currentVideoPlayer = playLeftVideo()
@@ -74,11 +95,14 @@ def checkForInput():
         setBackground("buzzer_background_{}x{}.png".format(screenWidth, screenHeight))
     
     if (currentVideoPlayer == None):
-        isLeftPressed = not GPIO.input(13)
-        isRightPressed = not GPIO.input(27)
+        isLeftPressed = not GPIO.input(LEFT_BUTTON_PIN)
+        isRightPressed = not GPIO.input(RIGHT_BUTTON_PIN)
 
         if (isLeftPressed or isRightPressed):
-            GPIO.output(17, 0)
+            GPIO.output(LEFT_LED, 0)
+            GPIO.output(RIGHT_LED, 0)
+            isFlashOn = True
+            
             if (isLeftPressed and isRightPressed):
                 # Both pressed at the same time, so we need to choose one to be the winner.
                 if (nextTieWinnerLeft):
@@ -96,7 +120,9 @@ def checkForInput():
                 setBackground("buzzer_right_still_{}x{}.png".format(screenWidth, screenHeight))
                 doPlayRightVideo = True
                 buzzerSound.play()
-
+    else:
+        flashLED()
+                
     win.after(1, checkForInput)
 
 ################################################################################################
@@ -163,6 +189,14 @@ def setBackground(path):
 
 ################################################################################################
 
+LEFT_BUTTON_PIN = 13
+LEFT_LED = 17
+RIGHT_BUTTON_PIN = 27
+RIGHT_LED = 19
+
+flashingLedTimer = Timer(0.1)
+isFlashOn = True
+
 win = Tk()
 win.title("Buzzer")
 win.attributes("-fullscreen", True)
@@ -207,14 +241,16 @@ buzzerSound = loadPgSound("av/buzzer.wav")
 
 GPIO.setwarnings(False) # Ignore warning for now
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(13, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(27, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(LEFT_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(RIGHT_BUTTON_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-GPIO.setup(17, GPIO.OUT)
+GPIO.setup(LEFT_LED, GPIO.OUT)
+GPIO.setup(RIGHT_LED, GPIO.OUT)
 
 nextTieWinnerLeft = True
 
-GPIO.output(17, 1)
+GPIO.output(LEFT_LED, 1)
+GPIO.output(RIGHT_LED, 1)
 
 # Do other stuff every frame.
 win.after(1, checkForInput)
