@@ -189,6 +189,7 @@ def setBackground(path):
 
 ################################################################################################
 
+# Uses BCM pin numbering.
 LEFT_BUTTON_PIN = 13
 LEFT_LED = 17
 RIGHT_BUTTON_PIN = 27

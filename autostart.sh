@@ -7,5 +7,6 @@ DO_AUTOSTART="true"
 
 if [ $DO_AUTOSTART = "true" ]
 then
-    python3 buzzer.py
+    rm autostart_log.txt
+    python3 buzzer.py > autostart_log.txt
 fi
